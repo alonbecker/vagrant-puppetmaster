@@ -2,7 +2,33 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.define :master do |master_config|
+
+  nodes = [:node1,:node2,:node3]
+  domain = 'alonbecker.dev'
+  starting_ip = 11
+
+  nodes.each do |node|
+    config.vm.define node do |node_config|
+      node_config.vm.hostname = "#{node}.#{domain}"
+      node_config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/ubuntu-server-12042-x64-vbox4210-nocm.box"
+      node_config.vm.box = "puppet_ubuntu1204"
+      node_config.vm.provision :hostmanager
+      node_config.vm.provision :shell, :path => "puppet_configure.sh"
+      node_config.vm.network :private_network, ip: "192.168.33.#{starting_ip}"
+      node_config.vm.provision "puppet_server" do |puppet|
+        puppet.puppet_server = "puppet.alonbecker.dev"
+      end
+    end
+    starting_ip += 1
+  end
+  config.vm.define :master do |master_config| 
+
+    # manage the hosts file with hostmanager plugin
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
+    config.hostmanager.ignore_private_ip = false
+    config.hostmanager.include_offline = true
+
     # Supports local cache, don't wast bandwitdh
     # vagrant plugin install vagrant-cachier
     # https://github.com/fgrehm/vagrant-cachier 
@@ -12,13 +38,13 @@ Vagrant.configure("2") do |config|
       # All Vagrant configuration is done here. The most common configuration
       # options are documented and commented below. For a complete reference,
       # please see the online documentation at vagrantup.com.
-      master_config.vm.hostname = "puppet.grahamgilbert.dev"
+      master_config.vm.hostname = "puppet.#{domain}"
       # Every Vagrant virtual environment requires a box to build off of.
       master_config.vm.box = "precise64"
     
       # The url from where the 'master_config.vm.box' box will be fetched if it
       # doesn't already exist on the user's system.
-      master_config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+      master_config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/ubuntu-server-12042-x64-vbox4210-nocm.box"
       
       # If you're using VMWare Fusion rather than Virtualbox, you'll want to use this box_url instead
       # master_config.vm.box_url = "http://files.vagrantup.com/precise64_vmware_fusion.box"
@@ -33,6 +59,7 @@ Vagrant.configure("2") do |config|
       # an identifier, the second is the path on the guest to mount the
       # folder, and the third is the path on the host to the actual folder.
       
+      master_config.vm.provision :hostmanager
       master_config.vm.provision :shell, :path => "puppet_master.sh"
       # Enable the Puppet provisioner
       master_config.vm.provision :puppet, :module_path => "VagrantConf/modules", :manifests_path => "VagrantConf/manifests", :manifest_file  => "default.pp"
@@ -42,5 +69,5 @@ Vagrant.configure("2") do |config|
     master_config.vm.synced_folder "puppet/hieradata", "/etc/puppet/hieradata"
   end
   
-  
+    
 end

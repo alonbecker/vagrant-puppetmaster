@@ -2,3 +2,11 @@
 .DS_Store
 
 .vagrant
+
+puppet/modules
+
+puppet/.librarian
+
+puppet/Puppetfile.lock
+
+.idea
