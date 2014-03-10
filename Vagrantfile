@@ -3,23 +3,21 @@
 
 Vagrant.configure("2") do |config|
 
-  nodes = [:node1,:node2,:node3]
+  nodes = 3 
   domain = 'alonbecker.dev'
-  starting_ip = 11
 
-  nodes.each do |node|
-    config.vm.define node do |node_config|
-      node_config.vm.hostname = "#{node}.#{domain}"
+  (1..nodes).each do |node|
+    config.vm.define "node#{node}" do |node_config|
+      node_config.vm.hostname = "node#{node}.#{domain}"
       node_config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/ubuntu-server-12042-x64-vbox4210-nocm.box"
       node_config.vm.box = "puppet_ubuntu1204"
       node_config.vm.provision :hostmanager
       node_config.vm.provision :shell, :path => "puppet_configure.sh"
-      node_config.vm.network :private_network, ip: "192.168.33.#{starting_ip}"
+      node_config.vm.network :private_network, ip: "192.168.33.2#{node}"
       node_config.vm.provision "puppet_server" do |puppet|
         puppet.puppet_server = "puppet.alonbecker.dev"
       end
     end
-    starting_ip += 1
   end
   config.vm.define :master do |master_config| 
 
