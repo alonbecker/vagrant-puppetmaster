@@ -6,6 +6,6 @@ forge "http://forge.puppetlabs.com"
 mod 'puppetlabs/haproxy'
 mod 'puppetlabs/ntp'
 
-# mod 'apt',
-#   :git => 'https://github.com/puppetlabs/puppetlabs-apt.git',
-#   :ref => 'feature/master/dans_refactor'
+mod 'admin',
+   :git => 'https://github.com/eToro/puppet-admin',
+   :ref => '0.1.0'
